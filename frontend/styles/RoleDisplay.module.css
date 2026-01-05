@@ -1,0 +1,80 @@
+.roleContainer {
+  margin-bottom: 2rem;
+}
+
+.roleBadge {
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  border-left: 6px solid;
+  transition: transform 0.2s;
+}
+
+.roleBadge:hover {
+  transform: translateX(4px);
+}
+
+.roleIcon {
+  font-size: 2.5rem;
+}
+
+.roleInfo {
+  flex: 1;
+}
+
+.roleLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #7f8c8d;
+  margin-bottom: 0.25rem;
+}
+
+.roleName {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.statusBadge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.active {
+  color: #27ae60;
+}
+
+.inactive {
+  color: #e74c3c;
+}
+
+.noRoleMessage {
+  background: #fff3cd;
+  color: #856404;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-top: 1rem;
+  text-align: center;
+  border: 2px solid #ffc107;
+}
+
+.loading {
+  text-align: center;
+  color: #7f8c8d;
+  padding: 1rem;
+  background: white;
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+  .roleBadge {
+    flex-direction: column;
+    text-align: center;
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "relieffund-contracts",
+  "version": "1.0.0",
+  "description": "Smart contracts for ReliefFund platform",
+  "main": "index.js",
+  "scripts": {
+    "node": "hardhat node",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js --network localhost",
+    "test": "hardhat test"
+  },
+  "keywords": [
+    "blockchain",
+    "disaster-relief",
+    "hardhat"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.4"
+  }
+}

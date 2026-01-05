@@ -23,20 +23,25 @@ let provider;
 let contract;
 let isConnected = false;
 
-// Contract ABI (minimal for Phase-1)
+// Contract ABI (Phase-1: Relief Token System)
 const CONTRACT_ABI = [
   "function owner() view returns (address)",
   "function paused() view returns (bool)",
   "function totalDonations() view returns (uint256)",
-  "function totalAllocated() view returns (uint256)",
-  "function totalSpent() view returns (uint256)",
+  "function totalTokensMinted() view returns (uint256)",
+  "function totalTokensExpired() view returns (uint256)",
   "function getUserInfo(address) view returns (uint8 role, bool isActive, uint256 registeredAt)",
-  "function getFundStats() view returns (uint256 donations, uint256 allocated, uint256 spent, uint256 balance, bool isPaused)",
+  "function getBeneficiaryAccount(address) view returns (uint256 allocatedTokens, uint256 spentTokens, uint256 availableTokens, uint256 maxAllocation, uint256 dailySpendLimit, uint256 weeklySpendLimit, uint256 dailySpent, uint256 weeklySpent, uint256 expiryDate, bool isExpired)",
+  "function getMerchantProfile(address) view returns (uint8 category, string businessName, bool verified, uint256 totalReceived)",
+  "function getTokenStats() view returns (uint256 minted, uint256 expired, uint256 active, uint256 donations)",
   "function getRoleStats() view returns (uint256 admins, uint256 donors, uint256 beneficiaries, uint256 merchants)",
   "function getContractBalance() view returns (uint256)",
+  "function getCategoryName(uint8) view returns (string)",
   "event DonationReceived(address indexed donor, uint256 amount, uint256 timestamp)",
-  "event AidAllocated(address indexed beneficiary, uint256 amount, string reason, uint256 timestamp)",
-  "event AidSpent(address indexed beneficiary, address indexed merchant, uint256 amount, string description, uint256 timestamp)",
+  "event TokensAllocated(address indexed beneficiary, uint256 amount, uint256 expiryDate, uint256 timestamp)",
+  "event TokensSpent(address indexed beneficiary, address indexed merchant, uint8 category, uint256 amount, string description, uint256 timestamp)",
+  "event TokensExpired(address indexed beneficiary, uint256 amount, uint256 timestamp)",
+  "event MerchantRegistered(address indexed merchant, uint8 category, string businessName, uint256 timestamp)",
   "event RoleAssigned(address indexed user, uint8 role, uint256 timestamp)",
   "event RoleRevoked(address indexed user, uint8 oldRole, uint256 timestamp)",
 ];
@@ -137,18 +142,17 @@ app.get("/api/fund/stats", async (req, res) => {
       });
     }
 
-    const stats = await contract.getFundStats();
+    const tokenStats = await contract.getTokenStats();
     const roleStats = await contract.getRoleStats();
 
     res.json({
       success: true,
       data: {
-        fund: {
-          totalDonations: ethers.formatEther(stats[0]),
-          totalAllocated: ethers.formatEther(stats[1]),
-          totalSpent: ethers.formatEther(stats[2]),
-          balance: ethers.formatEther(stats[3]),
-          paused: stats[4],
+        tokens: {
+          minted: ethers.formatEther(tokenStats[0]),
+          expired: ethers.formatEther(tokenStats[1]),
+          active: ethers.formatEther(tokenStats[2]),
+          donations: ethers.formatEther(tokenStats[3]),
         },
         roles: {
           admins: roleStats[0].toString(),
@@ -209,6 +213,94 @@ app.get("/api/user/:address", async (req, res) => {
   }
 });
 
+// Get beneficiary account details
+app.get("/api/beneficiary/:address", async (req, res) => {
+  try {
+    if (!isConnected) {
+      return res.status(503).json({
+        success: false,
+        message: "Blockchain not connected",
+      });
+    }
+
+    const { address } = req.params;
+
+    if (!ethers.isAddress(address)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Ethereum address",
+      });
+    }
+
+    const account = await contract.getBeneficiaryAccount(address);
+
+    res.json({
+      success: true,
+      data: {
+        allocatedTokens: ethers.formatEther(account[0]),
+        spentTokens: ethers.formatEther(account[1]),
+        availableTokens: ethers.formatEther(account[2]),
+        maxAllocation: ethers.formatEther(account[3]),
+        dailySpendLimit: ethers.formatEther(account[4]),
+        weeklySpendLimit: ethers.formatEther(account[5]),
+        dailySpent: ethers.formatEther(account[6]),
+        weeklySpent: ethers.formatEther(account[7]),
+        expiryDate: Number(account[8]),
+        isExpired: account[9],
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching beneficiary account",
+      error: error.message,
+    });
+  }
+});
+
+// Get merchant profile
+app.get("/api/merchant/:address", async (req, res) => {
+  try {
+    if (!isConnected) {
+      return res.status(503).json({
+        success: false,
+        message: "Blockchain not connected",
+      });
+    }
+
+    const { address } = req.params;
+
+    if (!ethers.isAddress(address)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Ethereum address",
+      });
+    }
+
+    const profile = await contract.getMerchantProfile(address);
+
+    const categoryNames = ["None", "Food", "Medicine", "Emergency"];
+    const categoryId = Number(profile[0]);
+
+    res.json({
+      success: true,
+      data: {
+        category: categoryNames[categoryId],
+        categoryId: categoryId,
+        businessName: profile[1],
+        verified: profile[2],
+        totalReceived: ethers.formatEther(profile[3]),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching merchant profile",
+      error: error.message,
+    });
+  }
+});
+
 // Get contract events (last N events)
 app.get("/api/events/:eventType", async (req, res) => {
   try {
@@ -237,13 +329,27 @@ app.get("/api/events/:eventType", async (req, res) => {
         break;
       case "allocations":
         events = await contract.queryFilter(
-          "AidAllocated",
+          "TokensAllocated",
           fromBlock,
           "latest"
         );
         break;
       case "spending":
-        events = await contract.queryFilter("AidSpent", fromBlock, "latest");
+        events = await contract.queryFilter("TokensSpent", fromBlock, "latest");
+        break;
+      case "expired":
+        events = await contract.queryFilter(
+          "TokensExpired",
+          fromBlock,
+          "latest"
+        );
+        break;
+      case "merchants":
+        events = await contract.queryFilter(
+          "MerchantRegistered",
+          fromBlock,
+          "latest"
+        );
         break;
       case "roles":
         const assigned = await contract.queryFilter(
@@ -264,7 +370,7 @@ app.get("/api/events/:eventType", async (req, res) => {
         return res.status(400).json({
           success: false,
           message:
-            "Invalid event type. Use: donations, allocations, spending, or roles",
+            "Invalid event type. Use: donations, allocations, spending, expired, merchants, or roles",
         });
     }
 
@@ -324,9 +430,12 @@ async function startServer() {
     console.log(`   GET  /api/blockchain/status`);
     console.log(`   GET  /api/fund/stats`);
     console.log(`   GET  /api/user/:address`);
+    console.log(`   GET  /api/beneficiary/:address`);
+    console.log(`   GET  /api/merchant/:address`);
     console.log(`   GET  /api/events/:eventType`);
     console.log("\n💡 Make sure Hardhat node is running on port 8545");
-    console.log("💡 Update CONTRACT_ADDRESS in .env after deployment\n");
+    console.log("💡 Update CONTRACT_ADDRESS in .env after deployment");
+    console.log("\n🪙 Phase-1: Relief Token System Active\n");
   });
 }
 

@@ -28,13 +28,28 @@ async function main() {
   );
 
   // Get initial contract state
-  const stats = await reliefFund.getFundStats();
-  console.log("📊 Initial Contract State:");
-  console.log("   Total Donations:", hre.ethers.formatEther(stats[0]), "ETH");
-  console.log("   Total Allocated:", hre.ethers.formatEther(stats[1]), "ETH");
-  console.log("   Total Spent:", hre.ethers.formatEther(stats[2]), "ETH");
-  console.log("   Contract Balance:", hre.ethers.formatEther(stats[3]), "ETH");
-  console.log("   Paused:", stats[4]);
+  const tokenStats = await reliefFund.getTokenStats();
+  console.log("📊 Initial Token Statistics:");
+  console.log(
+    "   Tokens Minted:",
+    hre.ethers.formatEther(tokenStats[0]),
+    "RELIEF"
+  );
+  console.log(
+    "   Tokens Expired:",
+    hre.ethers.formatEther(tokenStats[1]),
+    "RELIEF"
+  );
+  console.log(
+    "   Tokens Active:",
+    hre.ethers.formatEther(tokenStats[2]),
+    "RELIEF"
+  );
+  console.log(
+    "   ETH Donations:",
+    hre.ethers.formatEther(tokenStats[3]),
+    "ETH"
+  );
 
   const roleStats = await reliefFund.getRoleStats();
   console.log("\n👥 Role Statistics:");

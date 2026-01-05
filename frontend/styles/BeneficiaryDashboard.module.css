@@ -1,0 +1,495 @@
+.dashboard {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: #7f8c8d;
+  font-size: 1.2rem;
+}
+
+.header {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.address {
+  font-family: "Courier New", monospace;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+.message {
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 2px solid #c3e6cb;
+}
+
+.message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 2px solid #f5c6cb;
+}
+
+.message.info {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 2px solid #bee5eb;
+}
+
+/* Balance Card */
+.balanceCard {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.balanceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.balanceLabel {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+}
+
+.balanceAmount {
+  font-size: 3rem;
+  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.tokenUnit {
+  font-size: 1.2rem;
+  opacity: 0.8;
+}
+
+.tokenIcon {
+  font-size: 4rem;
+  opacity: 0.3;
+}
+
+.balanceFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  padding-top: 1rem;
+}
+
+.balanceInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+/* Expiry Cards */
+.expiryCard {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.expiryCard.warning {
+  background: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.expiryIcon {
+  font-size: 2.5rem;
+}
+
+.expiryLabel {
+  font-weight: 700;
+  color: #856404;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.expiryCard.warning .expiryLabel {
+  color: #721c24;
+}
+
+.expiryTime {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #856404;
+  margin-bottom: 0.5rem;
+}
+
+.expiryCard.warning .expiryTime {
+  color: #721c24;
+}
+
+.expiredCard {
+  background: #f8d7da;
+  border: 2px solid #f5c6cb;
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.expiredIcon {
+  font-size: 2.5rem;
+}
+
+.expiredLabel {
+  font-weight: 700;
+  color: #721c24;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Limits */
+.limitsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.limitCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.limitHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.limitIcon {
+  font-size: 1.5rem;
+}
+
+.limitTitle {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.limitBar {
+  height: 12px;
+  background: #ecf0f1;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.limitProgress {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.limitInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.limitSpent {
+  color: #7f8c8d;
+}
+
+.limitRemaining {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.limitCard small {
+  color: #95a5a6;
+  font-size: 0.85rem;
+}
+
+/* QR Code Section */
+.qrSection {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.qrButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.qrButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.qrButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qrCard {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 15px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.qrCodeWrapper {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.qrInstructions {
+  color: #7f8c8d;
+  margin-bottom: 1rem;
+}
+
+.qrWallet {
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.qrWallet small {
+  color: #95a5a6;
+  font-size: 0.85rem;
+}
+
+.qrAddress {
+  font-family: "Courier New", monospace;
+  color: #2c3e50;
+  font-weight: 600;
+  word-break: break-all;
+  margin-top: 0.5rem;
+}
+
+/* Spending Form */
+.spendSection {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.spendSection h3 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+}
+
+.spendForm {
+  max-width: 500px;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+  display: block;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 0.875rem;
+  border: 2px solid #ecf0f1;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+  font-family: inherit;
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.formGroup input:disabled {
+  background: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.formGroup small {
+  display: block;
+  color: #95a5a6;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.spendButton {
+  width: 100%;
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+  margin-top: 1rem;
+}
+
+.spendButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.6);
+}
+
+.spendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* No Tokens State */
+.noTokens {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.noTokensIcon {
+  font-size: 5rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.noTokens h2 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.noTokens p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+/* Info Box */
+.infoBox {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem;
+  border-radius: 15px;
+}
+
+.infoBox h4 {
+  color: #2c3e50;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.infoBox ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.infoBox li {
+  padding: 0.5rem 0;
+  color: #34495e;
+  font-size: 0.95rem;
+}
+
+.infoBox strong {
+  color: #667eea;
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 1rem;
+  }
+
+  .balanceAmount {
+    font-size: 2rem;
+  }
+
+  .limitsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .qrCard {
+    padding: 1rem;
+  }
+}

@@ -49,6 +49,13 @@
   margin-bottom: 1rem;
 }
 
+.welcomeSubtitle {
+  font-size: 1.2rem;
+  color: #667eea;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
 .welcomeCard > p {
   font-size: 1.1rem;
   color: #7f8c8d;
@@ -57,7 +64,7 @@
 
 .features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 2rem;
   margin-top: 3rem;
 }

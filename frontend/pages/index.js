@@ -129,7 +129,7 @@ export default function Home() {
                     or Merchant)
                   </p>
                 </div>
-              ) : (
+              ) : userRole ? (
                 <div className={styles.statusCard}>
                   <h3>🔄 Role: {userRole}</h3>
                   <p>
@@ -138,6 +138,14 @@ export default function Home() {
                   </p>
                   <p className={styles.info}>
                     Dashboard for this role coming soon in next phase!
+                  </p>
+                </div>
+              ) : (
+                <div className={styles.statusCard}>
+                  <h3>⏳ Loading Role...</h3>
+                  <p>
+                    Your wallet: {walletAddress.slice(0, 6)}...
+                    {walletAddress.slice(-4)}
                   </p>
                 </div>
               )}

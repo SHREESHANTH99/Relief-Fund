@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import axios from "axios";
+import OnboardingQR from "./OnboardingQR";
+import AdminOfflineMonitoring from "./AdminOfflineMonitoring";
 import styles from "@/styles/AdminDashboard.module.css";
 
 const RELIEF_TOKEN_ABI = [
@@ -20,6 +22,7 @@ const AdminDashboard = ({ address, contract }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [showOnboardingQR, setShowOnboardingQR] = useState(false);
 
   // Form States
   const [allocateForm, setAllocateForm] = useState({
@@ -39,6 +42,11 @@ const AdminDashboard = ({ address, contract }) => {
     address: "",
     category: "1",
     businessName: "",
+  });
+
+  const [assignRoleForm, setAssignRoleForm] = useState({
+    address: "",
+    role: "3",
   });
 
   useEffect(() => {
@@ -200,6 +208,44 @@ const AdminDashboard = ({ address, contract }) => {
     }
   };
 
+  // Assign Role
+  const handleAssignRole = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contractWithSigner = contract.connect(signer);
+
+      const tx = await contractWithSigner.assignRole(
+        assignRoleForm.address,
+        parseInt(assignRoleForm.role)
+      );
+
+      showMessage("info", "Assigning role. Waiting for confirmation...");
+      await tx.wait();
+
+      showMessage(
+        "success",
+        `✅ Role assigned successfully to ${assignRoleForm.address.slice(
+          0,
+          6
+        )}...${assignRoleForm.address.slice(-4)}`
+      );
+      setAssignRoleForm({ address: "", role: "3" });
+      fetchStats();
+    } catch (err) {
+      console.error("Error assigning role:", err);
+      showMessage(
+        "error",
+        err.reason || "Failed to assign role. Check console for details."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.dashboard}>
       <div className={styles.header}>
@@ -276,7 +322,7 @@ const AdminDashboard = ({ address, contract }) => {
           }`}
           onClick={() => setActiveTab("beneficiary")}
         >
-          🤝 Register Beneficiary
+          👤 Register Beneficiary
         </button>
         <button
           className={`${styles.tab} ${
@@ -285,6 +331,30 @@ const AdminDashboard = ({ address, contract }) => {
           onClick={() => setActiveTab("merchant")}
         >
           🏪 Register Merchant
+        </button>
+        <button
+          className={`${styles.tab} ${
+            activeTab === "assignRole" ? styles.active : ""
+          }`}
+          onClick={() => setActiveTab("assignRole")}
+        >
+          👥 Assign Role
+        </button>
+        <button
+          className={`${styles.tab} ${
+            activeTab === "offline" ? styles.active : ""
+          }`}
+          onClick={() => setActiveTab("offline")}
+        >
+          📦 Offline Monitor
+        </button>
+        <button
+          className={`${styles.tab} ${
+            activeTab === "onboarding" ? styles.active : ""
+          }`}
+          onClick={() => setShowOnboardingQR(true)}
+        >
+          📱 Generate Onboarding QR
         </button>
       </div>
 
@@ -521,6 +591,103 @@ const AdminDashboard = ({ address, contract }) => {
             </button>
           </form>
         )}
+
+        {/* Assign Role Tab */}
+        {activeTab === "assignRole" && (
+          <form className={styles.form} onSubmit={handleAssignRole}>
+            <h3>👥 Assign Role to Wallet</h3>
+            <p className={styles.formDescription}>
+              Assign roles to wallet addresses to grant access and permissions
+            </p>
+
+            <div className={styles.formGroup}>
+              <label>Wallet Address</label>
+              <input
+                type="text"
+                placeholder="0x..."
+                value={assignRoleForm.address}
+                onChange={(e) =>
+                  setAssignRoleForm({
+                    ...assignRoleForm,
+                    address: e.target.value,
+                  })
+                }
+                required
+              />
+              <small>Enter the Ethereum wallet address</small>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Role</label>
+              <select
+                value={assignRoleForm.role}
+                onChange={(e) =>
+                  setAssignRoleForm({
+                    ...assignRoleForm,
+                    role: e.target.value,
+                  })
+                }
+                required
+              >
+                <option value="1">👨‍💼 Admin - Full system control</option>
+                <option value="2">💰 Donor - Can donate funds</option>
+                <option value="3">
+                  👤 Beneficiary - Receives relief tokens
+                </option>
+                <option value="4">🏪 Merchant - Accepts token payments</option>
+              </select>
+              <small>
+                Admin: Full control | Donor: Can donate | Beneficiary: Receives
+                tokens | Merchant: Accepts payments
+              </small>
+            </div>
+
+            <div className={styles.rolePreview}>
+              <div className={styles.rolePreviewHeader}>
+                <span>📋 Role Preview</span>
+              </div>
+              <div className={styles.rolePreviewContent}>
+                {assignRoleForm.role === "1" && (
+                  <>
+                    <strong>Admin</strong>
+                    <p>Can allocate tokens, register users, manage system</p>
+                  </>
+                )}
+                {assignRoleForm.role === "2" && (
+                  <>
+                    <strong>Donor</strong>
+                    <p>Can contribute ETH donations to the relief fund</p>
+                  </>
+                )}
+                {assignRoleForm.role === "3" && (
+                  <>
+                    <strong>Beneficiary</strong>
+                    <p>
+                      Receives relief tokens with spending limits and expiry
+                    </p>
+                  </>
+                )}
+                {assignRoleForm.role === "4" && (
+                  <>
+                    <strong>Merchant</strong>
+                    <p>Can accept token payments from beneficiaries</p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={loading}
+            >
+              {loading ? "Processing..." : "👥 Assign Role"}
+            </button>
+          </form>
+        )}
+
+        {/* Offline Monitor Tab */}
+        {activeTab === "offline" && <AdminOfflineMonitoring />}
       </div>
 
       {/* Info Box */}
@@ -547,6 +714,11 @@ const AdminDashboard = ({ address, contract }) => {
           </li>
         </ul>
       </div>
+
+      {/* Onboarding QR Modal */}
+      {showOnboardingQR && (
+        <OnboardingQR onClose={() => setShowOnboardingQR(false)} />
+      )}
     </div>
   );
 };

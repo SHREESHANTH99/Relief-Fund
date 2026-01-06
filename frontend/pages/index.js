@@ -4,11 +4,15 @@ import { ethers } from "ethers";
 import WalletConnect from "@/components/WalletConnect";
 import AdminDashboard from "@/components/AdminDashboard";
 import BeneficiaryDashboard from "@/components/BeneficiaryDashboard";
+import MerchantDashboard from "@/components/MerchantDashboard";
+import Navbar from "@/components/Navbar";
+import LandingNavbar from "@/components/LandingNavbar";
 import styles from "@/styles/Home.module.css";
 
 const RELIEF_TOKEN_ABI = [
   "function getUserInfo(address) view returns (uint8 role, bool isActive, uint256 registeredAt)",
   "function getBeneficiaryAccount(address) view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256, bool)",
+  "function getMerchantProfile(address) view returns (uint8, string, bool, uint256)",
   "function getTokenStats() view returns (uint256, uint256, uint256, uint256)",
   "function getRoleStats() view returns (uint256, uint256, uint256, uint256)",
   "function assignRole(address, uint8) external",
@@ -16,6 +20,22 @@ const RELIEF_TOKEN_ABI = [
   "function registerMerchant(address, uint8, string) external",
   "function setUserLimits(address, uint256, uint256, uint256) external",
   "function spendTokens(address, uint256, string) external",
+  "function setPINHash(address, bytes32) external",
+  "function resetPIN(address, bytes32) external",
+  "function authorizeRelayer(address, bool) external",
+  "function addTrustedRelayer(address) external",
+  "function relaySpendTokens(address, address, uint256, string, bytes32, uint256) external",
+  "function getNonce(address) view returns (uint256)",
+  "function userHasPIN(address) view returns (bool)",
+  "function pinHashes(address) view returns (bytes32)",
+  "function hasPIN(address) view returns (bool)",
+  "function trustedRelayers(address) view returns (bool)",
+  "function nonces(address) view returns (uint256)",
+  "event TokensSpent(address indexed beneficiary, address indexed merchant, uint8 category, uint256 amount, string description, uint256 timestamp)",
+  "event PINSet(address indexed user, uint256 timestamp)",
+  "event PINReset(address indexed user, uint256 timestamp)",
+  "event RelayerAuthorized(address indexed user, address indexed relayer, uint256 timestamp)",
+  "event RelayedTransaction(address indexed user, address indexed merchant, uint256 amount, uint256 timestamp)",
 ];
 
 export default function Home() {
@@ -23,9 +43,22 @@ export default function Home() {
   const [userRole, setUserRole] = useState(null);
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showConnectModal, setShowConnectModal] = useState(false);
+
+  // Restore wallet connection from localStorage on mount
+  useEffect(() => {
+    const savedAddress = localStorage.getItem("walletAddress");
+    const savedRole = localStorage.getItem("userRole");
+    if (savedAddress && savedRole) {
+      setWalletAddress(savedAddress);
+      setUserRole(savedRole);
+    }
+  }, []);
 
   useEffect(() => {
     if (walletAddress) {
+      // Save to localStorage for persistence
+      localStorage.setItem("walletAddress", walletAddress);
       initContract();
       fetchUserRole();
     }
@@ -34,6 +67,7 @@ export default function Home() {
   const initContract = async () => {
     try {
       const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+      console.log("🔍 Contract Address from env:", contractAddress);
       if (!contractAddress) {
         console.warn("Contract address not configured");
         return;
@@ -47,6 +81,7 @@ export default function Home() {
       );
 
       setContract(contractInstance);
+      console.log("✅ Contract initialized successfully");
     } catch (err) {
       console.error("Error initializing contract:", err);
     }
@@ -56,7 +91,17 @@ export default function Home() {
     try {
       setLoading(true);
       const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-      if (!contractAddress) return;
+      console.log(
+        "🔍 Fetching role for address:",
+        walletAddress,
+        "from contract:",
+        contractAddress
+      );
+
+      if (!contractAddress) {
+        console.error("❌ Contract address not configured!");
+        return;
+      }
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const contractInstance = new ethers.Contract(
@@ -65,11 +110,17 @@ export default function Home() {
         provider
       );
 
+      console.log("📞 Calling getUserInfo...");
       const userInfo = await contractInstance.getUserInfo(walletAddress);
+      console.log("📋 User Info:", userInfo);
+
       const roleId = Number(userInfo[0]);
 
       const roleNames = ["None", "Admin", "Donor", "Beneficiary", "Merchant"];
       setUserRole(roleNames[roleId]);
+      // Save role to localStorage for persistence
+      localStorage.setItem("userRole", roleNames[roleId]);
+      console.log("✅ Role set to:", roleNames[roleId]);
     } catch (err) {
       console.error("Error fetching user role:", err);
     } finally {
@@ -90,20 +141,21 @@ export default function Home() {
       </Head>
 
       <div className={styles.container}>
-        <header className={styles.header}>
-          <h1>🌍 ReliefFund</h1>
-          <p className={styles.subtitle}>
-            Transparent Disaster Relief Platform
-          </p>
-
-          <WalletConnect
-            onConnect={(address) => setWalletAddress(address)}
+        {walletAddress ? (
+          <Navbar
+            walletAddress={walletAddress}
+            userRole={userRole}
             onDisconnect={() => {
               setWalletAddress(null);
               setUserRole(null);
+              // Clear localStorage on disconnect
+              localStorage.removeItem("walletAddress");
+              localStorage.removeItem("userRole");
             }}
           />
-        </header>
+        ) : (
+          <LandingNavbar onConnectClick={() => setShowConnectModal(true)} />
+        )}
 
         <main className={styles.main}>
           {walletAddress ? (
@@ -114,6 +166,11 @@ export default function Home() {
                 <AdminDashboard address={walletAddress} contract={contract} />
               ) : userRole === "Beneficiary" ? (
                 <BeneficiaryDashboard
+                  address={walletAddress}
+                  contract={contract}
+                />
+              ) : userRole === "Merchant" ? (
+                <MerchantDashboard
                   address={walletAddress}
                   contract={contract}
                 />
@@ -151,47 +208,97 @@ export default function Home() {
               )}
             </>
           ) : (
-            <div className={styles.welcomeCard}>
-              <h2>Welcome to ReliefFund Phase-1</h2>
-              <p className={styles.welcomeSubtitle}>
-                Relief Token System with User Controls
-              </p>
-              <p>Connect your wallet to get started</p>
+            <div className={styles.landingPage}>
+              <div className={styles.heroSection}>
+                <div className={styles.logoContainer}>
+                  <span className={styles.logoIcon}>🌍</span>
+                  <h1 className={styles.brandName}>ReliefFund</h1>
+                </div>
+                <p className={styles.tagline}>
+                  Transparent Disaster Relief Platform
+                </p>
 
-              <div className={styles.features}>
-                <div className={styles.feature}>
-                  <span>🪙</span>
-                  <h4>Stable Relief Token</h4>
-                  <p>1 Token = 1 Relief Unit (e.g., 1 meal) - No volatility</p>
+                <div className={styles.ctaSection}>
+                  <button
+                    className={styles.primaryCTA}
+                    onClick={() => setShowConnectModal(true)}
+                  >
+                    <span>🔗</span>
+                    <span>Connect Wallet to Get Started</span>
+                  </button>
                 </div>
-                <div className={styles.feature}>
-                  <span>🪙</span>
-                  <h4>Stable Relief Token</h4>
-                  <p>1 Token = 1 Relief Unit (e.g., 1 meal) - No volatility</p>
-                </div>
-                <div className={styles.feature}>
-                  <span>🔒</span>
-                  <h4>Per-User Token Caps</h4>
-                  <p>Daily & weekly spending limits enforced on-chain</p>
-                </div>
-                <div className={styles.feature}>
-                  <span>⏰</span>
-                  <h4>Token Expiry</h4>
-                  <p>Unspent tokens expire after set period</p>
-                </div>
-                <div className={styles.feature}>
-                  <span>🏪</span>
-                  <h4>Category-Restricted</h4>
-                  <p>Valid only for Food, Medicine, Emergency supplies</p>
+              </div>
+
+              <div className={styles.featuresSection}>
+                <h2 className={styles.featuresTitle}>
+                  Powered by Blockchain Technology
+                </h2>
+                <div className={styles.featuresGrid}>
+                  <div className={styles.featureCard}>
+                    <div className={styles.featureIconBox}>
+                      <span>🪙</span>
+                    </div>
+                    <h3>Stable Relief Token</h3>
+                    <p>
+                      1 Token = 1 Relief Unit (e.g., 1 meal) - No volatility
+                    </p>
+                  </div>
+                  <div className={styles.featureCard}>
+                    <div className={styles.featureIconBox}>
+                      <span>🔒</span>
+                    </div>
+                    <h3>Per-User Token Caps</h3>
+                    <p>Daily & weekly spending limits enforced on-chain</p>
+                  </div>
+                  <div className={styles.featureCard}>
+                    <div className={styles.featureIconBox}>
+                      <span>⏰</span>
+                    </div>
+                    <h3>Token Expiry</h3>
+                    <p>Unspent tokens expire after set period</p>
+                  </div>
+                  <div className={styles.featureCard}>
+                    <div className={styles.featureIconBox}>
+                      <span>🏪</span>
+                    </div>
+                    <h3>Category-Restricted</h3>
+                    <p>Valid only for Food, Medicine, Emergency supplies</p>
+                  </div>
                 </div>
               </div>
             </div>
           )}
         </main>
 
-        <footer className={styles.footer}>
-          <p>Phase-1: Relief Token & User Controls | Local Hardhat Network</p>
-        </footer>
+        {/* WalletConnect Modal */}
+        {showConnectModal && (
+          <div
+            className={styles.modalOverlay}
+            onClick={() => setShowConnectModal(false)}
+          >
+            <div
+              className={styles.modalContent}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className={styles.modalClose}
+                onClick={() => setShowConnectModal(false)}
+              >
+                ×
+              </button>
+              <WalletConnect
+                onConnect={(address) => {
+                  setWalletAddress(address);
+                  setShowConnectModal(false);
+                }}
+                onDisconnect={() => {
+                  setWalletAddress(null);
+                  setUserRole(null);
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

@@ -7,23 +7,30 @@ const { ethers } = require("ethers");
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(
   cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(",") || "http://localhost:3000",
+    origin: process.env.ALLOWED_ORIGINS?.split(",") || [
+      "http://localhost:3000",
+      "http://localhost:3001",
+    ],
     credentials: true,
   })
 );
 app.use(express.json());
+
+// Import routes
+const authRoutes = require("./routes/auth");
+const offlineRoutes = require("./routes/offline");
 
 // Blockchain connection
 let provider;
 let contract;
 let isConnected = false;
 
-// Contract ABI (Phase-1: Relief Token System)
+// Contract ABI (Phase-1 & Phase-2: Relief Token System + PIN Auth)
 const CONTRACT_ABI = [
   "function owner() view returns (address)",
   "function paused() view returns (bool)",
@@ -37,6 +44,14 @@ const CONTRACT_ABI = [
   "function getRoleStats() view returns (uint256 admins, uint256 donors, uint256 beneficiaries, uint256 merchants)",
   "function getContractBalance() view returns (uint256)",
   "function getCategoryName(uint8) view returns (string)",
+  "function setPINHash(address _user, bytes32 _pinHash) external",
+  "function resetPIN(address _user) external",
+  "function authorizeRelayer(address _relayer) external",
+  "function addTrustedRelayer(address _relayer) external",
+  "function removeTrustedRelayer(address _relayer) external",
+  "function relaySpendTokens(address _user, address _merchant, uint256 _amount, string _description, bytes32 _pinHash, uint256 _nonce) external",
+  "function getNonce(address _user) view returns (uint256)",
+  "function userHasPIN(address _user) view returns (bool)",
   "event DonationReceived(address indexed donor, uint256 amount, uint256 timestamp)",
   "event TokensAllocated(address indexed beneficiary, uint256 amount, uint256 expiryDate, uint256 timestamp)",
   "event TokensSpent(address indexed beneficiary, address indexed merchant, uint8 category, uint256 amount, string description, uint256 timestamp)",
@@ -44,6 +59,10 @@ const CONTRACT_ABI = [
   "event MerchantRegistered(address indexed merchant, uint8 category, string businessName, uint256 timestamp)",
   "event RoleAssigned(address indexed user, uint8 role, uint256 timestamp)",
   "event RoleRevoked(address indexed user, uint8 oldRole, uint256 timestamp)",
+  "event PINSet(address indexed user, uint256 timestamp)",
+  "event PINReset(address indexed user, uint256 timestamp)",
+  "event RelayerAuthorized(address indexed user, address indexed relayer, uint256 timestamp)",
+  "event RelayedTransaction(address indexed user, address indexed relayer, string action, uint256 timestamp)",
 ];
 
 // Initialize blockchain connection
@@ -99,6 +118,12 @@ app.get("/api/health", (req, res) => {
     },
   });
 });
+
+// Phase-2: Auth routes (PIN, Relayer)
+app.use("/api/auth", authRoutes);
+
+// Phase-3: Offline payments routes
+app.use("/api/offline", offlineRoutes);
 
 // Get blockchain connection status
 app.get("/api/blockchain/status", async (req, res) => {

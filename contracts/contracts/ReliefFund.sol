@@ -89,7 +89,28 @@ contract ReliefFund {
     // Donations (ETH)
     uint256 public totalDonations;
 
+    // Phase-2: PIN Authentication & Relayer
+    mapping(address => bytes32) public pinHashes; // User -> Hashed PIN
+    mapping(address => bool) public hasPIN; // User has set PIN
+    mapping(address => address) public relayers; // User -> Authorized Relayer
+    mapping(address => bool) public trustedRelayers; // Backend relayers
+    mapping(address => uint256) public nonces; // For replay protection
+
     // ============= EVENTS =============
+
+    event PINSet(address indexed user, uint256 timestamp);
+    event PINReset(address indexed user, uint256 timestamp);
+    event RelayerAuthorized(
+        address indexed user,
+        address indexed relayer,
+        uint256 timestamp
+    );
+    event RelayedTransaction(
+        address indexed user,
+        address indexed relayer,
+        string action,
+        uint256 timestamp
+    );
 
     event RoleAssigned(address indexed user, Role role, uint256 timestamp);
     event RoleRevoked(address indexed user, Role oldRole, uint256 timestamp);
@@ -581,6 +602,148 @@ contract ReliefFund {
         if (_category == MerchantCategory.Medicine) return "Medicine";
         if (_category == MerchantCategory.Emergency) return "Emergency";
         return "None";
+    }
+
+    // ============= PHASE-2: PIN AUTHENTICATION =============
+
+    /**
+     * @dev Set PIN hash for user (called by backend after PIN entry)
+     */
+    function setPINHash(address _user, bytes32 _pinHash) external onlyAdmin {
+        require(users[_user].isActive, "User not active");
+        pinHashes[_user] = _pinHash;
+        hasPIN[_user] = true;
+        emit PINSet(_user, block.timestamp);
+    }
+
+    /**
+     * @dev Reset PIN (admin can force reset)
+     */
+    function resetPIN(address _user) external onlyAdmin {
+        require(hasPIN[_user], "User has no PIN");
+        delete pinHashes[_user];
+        hasPIN[_user] = false;
+        emit PINReset(_user, block.timestamp);
+    }
+
+    /**
+     * @dev Authorize a relayer to submit transactions on behalf of user
+     */
+    function authorizeRelayer(address _relayer) external {
+        require(users[msg.sender].isActive, "User not active");
+        relayers[msg.sender] = _relayer;
+        emit RelayerAuthorized(msg.sender, _relayer, block.timestamp);
+    }
+
+    /**
+     * @dev Admin adds trusted relayer (backend service)
+     */
+    function addTrustedRelayer(address _relayer) external onlyAdmin {
+        trustedRelayers[_relayer] = true;
+    }
+
+    /**
+     * @dev Admin removes trusted relayer
+     */
+    function removeTrustedRelayer(address _relayer) external onlyAdmin {
+        trustedRelayers[_relayer] = false;
+    }
+
+    /**
+     * @dev Relayed spending - backend submits transaction on behalf of user
+     * @param _user The beneficiary spending tokens
+     * @param _merchant The merchant receiving tokens
+     * @param _amount Amount of tokens
+     * @param _description Payment description
+     * @param _pinHash Hash of PIN provided by user
+     * @param _nonce Nonce for replay protection
+     */
+    function relaySpendTokens(
+        address _user,
+        address _merchant,
+        uint256 _amount,
+        string calldata _description,
+        bytes32 _pinHash,
+        uint256 _nonce
+    ) external whenNotPaused {
+        require(trustedRelayers[msg.sender], "Not trusted relayer");
+        require(hasPIN[_user], "User has no PIN");
+        require(pinHashes[_user] == _pinHash, "Invalid PIN");
+        require(nonces[_user] == _nonce, "Invalid nonce");
+
+        // Increment nonce to prevent replay
+        nonces[_user]++;
+
+        // Execute spending logic (same as spendTokens but without msg.sender)
+        require(users[_user].role == Role.Beneficiary, "Not a beneficiary");
+        require(users[_merchant].role == Role.Merchant, "Not a merchant");
+        require(merchants[_merchant].verified, "Merchant not verified");
+
+        BeneficiaryAccount storage account = beneficiaries[_user];
+        MerchantProfile storage merchant = merchants[_merchant];
+
+        // Check expiry
+        require(block.timestamp < account.expiryDate, "Tokens expired");
+
+        // Calculate available balance
+        uint256 available = account.allocatedTokens - account.spentTokens;
+        require(available >= _amount, "Insufficient balance");
+
+        // Check daily limit
+        if (block.timestamp - account.lastSpendDate >= 1 days) {
+            account.dailySpent = 0;
+            account.lastSpendDate = block.timestamp;
+        }
+        require(
+            account.dailySpent + _amount <= account.dailySpendLimit,
+            "Daily limit exceeded"
+        );
+
+        // Check weekly limit
+        if (block.timestamp - account.weekStartDate >= 7 days) {
+            account.weeklySpent = 0;
+            account.weekStartDate = block.timestamp;
+        }
+        require(
+            account.weeklySpent + _amount <= account.weeklySpendLimit,
+            "Weekly limit exceeded"
+        );
+
+        // Update balances
+        account.spentTokens += _amount;
+        account.dailySpent += _amount;
+        account.weeklySpent += _amount;
+        merchant.totalReceived += _amount;
+
+        emit TokensSpent(
+            _user,
+            _merchant,
+            merchant.category,
+            _amount,
+            _description,
+            block.timestamp
+        );
+
+        emit RelayedTransaction(
+            _user,
+            msg.sender,
+            "spend_tokens",
+            block.timestamp
+        );
+    }
+
+    /**
+     * @dev Get user's current nonce
+     */
+    function getNonce(address _user) external view returns (uint256) {
+        return nonces[_user];
+    }
+
+    /**
+     * @dev Check if user has PIN set
+     */
+    function userHasPIN(address _user) external view returns (bool) {
+        return hasPIN[_user];
     }
 
     // ============= FALLBACK =============

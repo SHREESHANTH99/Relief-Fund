@@ -1,159 +1,319 @@
+/* Professional Landing Page */
 .container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: #f8f9fa;
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+}
+
+/* Landing Page */
+.landingPage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
   padding: 2rem;
 }
 
-.header {
-  width: 100%;
-  max-width: 1200px;
+/* Hero Section */
+.heroSection {
   text-align: center;
+  max-width: 800px;
+  margin-bottom: 6rem;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.logoIcon {
+  font-size: 4rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.brandName {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.tagline {
+  font-size: 1.375rem;
+  color: #6c757d;
   margin-bottom: 3rem;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 2rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
-.header h1 {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
-  color: #2c3e50;
+.ctaSection {
+  display: flex;
+  justify-content: center;
 }
 
-.subtitle {
-  font-size: 1.2rem;
-  color: #7f8c8d;
-  margin-bottom: 2rem;
-}
-
-.main {
-  width: 100%;
-  max-width: 1200px;
-  flex: 1;
-}
-
-.welcomeCard {
-  background: white;
-  padding: 3rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
-.welcomeCard h2 {
-  font-size: 2rem;
-  color: #2c3e50;
-  margin-bottom: 1rem;
-}
-
-.welcomeSubtitle {
-  font-size: 1.2rem;
-  color: #667eea;
+/* Primary CTA Button */
+.primaryCTA {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.125rem 2.5rem;
+  background: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.125rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.3);
+  font-family: inherit;
 }
 
-.welcomeCard > p {
-  font-size: 1.1rem;
-  color: #7f8c8d;
+.primaryCTA:hover {
+  background: #1a252f;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+}
+
+.primaryCTA span:first-child {
+  font-size: 1.5rem;
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalClose {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  font-size: 1.5rem;
+  color: #6c757d;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.modalClose:hover {
+  background: #e9ecef;
+  color: #495057;
+  transform: rotate(90deg);
+}
+
+/* Features Section */
+.featuresSection {
+  max-width: 1100px;
+  width: 100%;
+}
+
+.featuresTitle {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #495057;
   margin-bottom: 3rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-.features {
+.featuresGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 2rem;
-  margin-top: 3rem;
 }
 
-.feature {
+.featureCard {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s;
   text-align: center;
 }
 
-.feature span {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: 1rem;
+.featureCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-color: #ced4da;
 }
 
-.feature h4 {
-  font-size: 1.3rem;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
+.featureIconBox {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 2rem;
+  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.2);
 }
 
-.feature p {
-  color: #7f8c8d;
-  font-size: 1rem;
+.featureCard h3 {
+  font-size: 1.125rem;
+  color: #1a1a1a;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
 }
 
+.featureCard p {
+  color: #6c757d;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Status Cards */
 .statusCard {
   background: white;
-  padding: 2.5rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  margin-top: 2rem;
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+  margin: 2rem auto;
   text-align: center;
   max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .statusCard h3 {
-  color: #667eea;
-  font-size: 1.8rem;
+  color: #2c3e50;
+  font-size: 1.75rem;
   margin-bottom: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .statusCard p {
-  color: #2c3e50;
+  color: #495057;
   margin: 1rem 0;
-  font-size: 1.2rem;
-  font-weight: 500;
+  font-size: 1rem;
 }
 
 .info {
-  background: #e8f4f8;
-  padding: 1.5rem;
-  border-radius: 12px;
+  background: #e3f2fd;
+  padding: 1.25rem;
+  border-radius: 8px;
   margin-top: 1.5rem;
-  color: #34495e !important;
-  font-size: 1rem !important;
-  border-left: 4px solid #667eea;
+  color: #1565c0 !important;
+  font-size: 0.95rem !important;
+  border-left: 3px solid #2196f3;
 }
 
 .loading {
   text-align: center;
-  font-size: 1.5rem;
-  color: white;
+  font-size: 1.25rem;
+  color: #6c757d;
   padding: 3rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  margin: 2rem auto;
+  max-width: 600px;
 }
 
-.footer {
-  width: 100%;
-  max-width: 1200px;
-  text-align: center;
-  padding: 2rem;
-  color: white;
-  margin-top: 3rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
-}
-
+/* Responsive */
 @media (max-width: 768px) {
-  .header h1 {
-    font-size: 2rem;
+  .landingPage {
+    padding: 1.5rem;
   }
 
-  .features {
+  .heroSection {
+    margin-bottom: 4rem;
+  }
+
+  .brandName {
+    font-size: 2.5rem;
+  }
+
+  .logoIcon {
+    font-size: 3rem;
+  }
+
+  .tagline {
+    font-size: 1.125rem;
+  }
+
+  .featuresGrid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .featuresTitle {
+    font-size: 1.25rem;
+  }
+
+  .statusCard {
+    padding: 2rem;
   }
 }

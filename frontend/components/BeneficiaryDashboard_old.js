@@ -29,16 +29,14 @@ const BeneficiaryDashboard = ({ address, contract }) => {
   });
 
   useEffect(() => {
-    if (address && contract) {
+    fetchAccountInfo();
+    checkPINStatus();
+    fetchTransactions();
+    const interval = setInterval(() => {
       fetchAccountInfo();
-      checkPINStatus();
       fetchTransactions();
-      const interval = setInterval(() => {
-        fetchAccountInfo();
-        fetchTransactions();
-      }, 10000);
-      return () => clearInterval(interval);
-    }
+    }, 10000);
+    return () => clearInterval(interval);
   }, [address, contract]);
 
   const fetchAccountInfo = async () => {
@@ -73,16 +71,12 @@ const BeneficiaryDashboard = ({ address, contract }) => {
 
   const checkPINStatus = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-      const response = await axios.get(`${apiUrl}/api/auth/has-pin/${address}`);
+      const response = await axios.get(
+        `http://localhost:5000/api/auth/has-pin/${address}`
+      );
       setHasPIN(response.data.hasPIN);
-      // Cache PIN status in localStorage
-      localStorage.setItem(`hasPIN_${address}`, response.data.hasPIN);
     } catch (err) {
       console.error("Error checking PIN status:", err);
-      // Try to use cached PIN status
-      const cachedPIN = localStorage.getItem(`hasPIN_${address}`);
-      setHasPIN(cachedPIN === "true");
     }
   };
 
@@ -95,7 +89,6 @@ const BeneficiaryDashboard = ({ address, contract }) => {
 
       const txs = events.map((event) => ({
         merchant: event.args.merchant,
-        category: event.args.category || 0, // Category field added
         amount: ethers.formatEther(event.args.amount),
         description: event.args.description,
         timestamp: new Date(Number(event.args.timestamp) * 1000),
@@ -103,7 +96,6 @@ const BeneficiaryDashboard = ({ address, contract }) => {
       }));
 
       setTransactions(txs.reverse());
-      console.log("✅ Fetched", txs.length, "transactions");
     } catch (err) {
       console.error("Error fetching transactions:", err);
     }
@@ -112,17 +104,17 @@ const BeneficiaryDashboard = ({ address, contract }) => {
   const handlePINSetup = async (pin) => {
     try {
       setLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-      const response = await axios.post(`${apiUrl}/api/auth/set-pin`, {
-        address,
-        pin,
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/set-pin",
+        {
+          address,
+          pin,
+        }
+      );
 
       if (response.data.success) {
         setHasPIN(true);
         setShowPINSetup(false);
-        // Update cached PIN status
-        localStorage.setItem(`hasPIN_${address}`, "true");
         showMessage(
           "success",
           "✅ PIN set successfully! You can now make quick payments."
@@ -371,149 +363,119 @@ const BeneficiaryDashboard = ({ address, contract }) => {
           </div>
 
           {/* Quick Actions with Modern Design */}
-          <div className={styles.quickActionsGrid}>
-            <div
-              className={`${styles.actionCard} ${styles.primary}`}
-              onClick={() => {
-                if (
+          {hasPIN ? (
+            <div className={styles.quickActionsGrid}>
+              <div
+                className={`${styles.actionCard} ${styles.primary}`}
+                onClick={() =>
                   !account.isExpired &&
-                  parseFloat(account.availableTokens) > 0
-                ) {
-                  if (hasPIN) {
-                    setShowQRScanner(true);
-                  } else {
-                    setShowPINSetup(true);
-                    showMessage(
-                      "info",
-                      "Please setup PIN first to use payments"
-                    );
-                  }
+                  parseFloat(account.availableTokens) > 0 &&
+                  setShowQRScanner(true)
                 }
-              }}
-            >
-              <div className={styles.actionCardIcon}>📱</div>
-              <div className={styles.actionCardTitle}>Scan QR Code</div>
-              <div className={styles.actionCardDesc}>
-                Scan merchant QR to pay
+              >
+                <div className={styles.actionCardIcon}>📱</div>
+                <div className={styles.actionCardTitle}>Scan QR</div>
+                <div className={styles.actionCardDesc}>Quick Payment</div>
+              </div>
+              <div
+                className={`${styles.actionCard} ${styles.secondary}`}
+                onClick={() =>
+                  !account.isExpired &&
+                  parseFloat(account.availableTokens) > 0 &&
+                  setActiveTab("pay")
+                }
+              >
+                <div className={styles.actionCardIcon}>💳</div>
+                <div className={styles.actionCardTitle}>Manual Pay</div>
+                <div className={styles.actionCardDesc}>Enter Details</div>
               </div>
             </div>
-            <div
-              className={`${styles.actionCard} ${styles.secondary}`}
-              onClick={() => {
-                if (
-                  !account.isExpired &&
-                  parseFloat(account.availableTokens) > 0
-                ) {
-                  if (hasPIN) {
-                    setActiveTab("pay");
-                  } else {
-                    setShowPINSetup(true);
-                    showMessage(
-                      "info",
-                      "Please setup PIN first to use payments"
-                    );
-                  }
-                }
-              }}
-            >
-              <div className={styles.actionCardIcon}>💳</div>
-              <div className={styles.actionCardTitle}>Manual Payment</div>
-              <div className={styles.actionCardDesc}>
-                Enter merchant details
-              </div>
-            </div>
-          </div>
-
-          {!hasPIN && (
+          ) : (
             <div className={styles.setupPINCard}>
               <div className={styles.setupPINIcon}>🔐</div>
-              <h3>Setup Your PIN First</h3>
+              <h3>Setup Your PIN</h3>
               <p>Set up a 4-digit PIN to enable quick and secure payments</p>
               <button
                 className={styles.primaryButton}
                 onClick={() => setShowPINSetup(true)}
               >
-                Setup PIN Now
+                Setup PIN Now →
               </button>
             </div>
           )}
 
-          {hasPIN && (
-            <>
-              {/* Expiry Warning */}
-              {account.timeLeft > 0 && (
-                <div
-                  className={`${styles.alertCard} ${
-                    account.timeLeft < 7 * 24 * 60 * 60
-                      ? styles.warning
-                      : styles.info
-                  }`}
-                >
-                  <div className={styles.alertIcon}>
-                    {account.timeLeft < 7 * 24 * 60 * 60 ? "⚠️" : "⏰"}
-                  </div>
-                  <div className={styles.alertContent}>
-                    <div className={styles.alertTitle}>
-                      {account.timeLeft < 7 * 24 * 60 * 60
-                        ? "Tokens Expiring Soon!"
-                        : "Token Expiry"}
-                    </div>
-                    <div className={styles.alertMessage}>
-                      {formatTimeLeft(account.timeLeft)} remaining · Use your
-                      tokens before they expire
-                    </div>
-                  </div>
+          {/* Expiry Warning */}
+          {account.timeLeft > 0 && (
+            <div
+              className={`${styles.alertCard} ${
+                account.timeLeft < 7 * 24 * 60 * 60
+                  ? styles.warning
+                  : styles.info
+              }`}
+            >
+              <div className={styles.alertIcon}>
+                {account.timeLeft < 7 * 24 * 60 * 60 ? "⚠️" : "⏰"}
+              </div>
+              <div className={styles.alertContent}>
+                <div className={styles.alertTitle}>
+                  {account.timeLeft < 7 * 24 * 60 * 60
+                    ? "Tokens Expiring Soon!"
+                    : "Token Expiry"}
                 </div>
-              )}
-
-              {/* Spending Limits Progress */}
-              <div className={styles.limitsCard}>
-                <h3 className={styles.limitsTitle}>📊 Spending Limits</h3>
-
-                <div className={styles.limitItem}>
-                  <div className={styles.limitHeader}>
-                    <span className={styles.limitLabel}>Daily Limit</span>
-                    <span className={styles.limitValue}>
-                      {parseFloat(account.dailySpent).toFixed(1)} /{" "}
-                      {parseFloat(account.dailySpendLimit).toFixed(0)}
-                    </span>
-                  </div>
-                  <div className={styles.progressBar}>
-                    <div
-                      className={`${styles.progressFill} ${
-                        dailyPercent > 80 ? styles.warning : ""
-                      }`}
-                      style={{ width: `${Math.min(dailyPercent, 100)}%` }}
-                    />
-                  </div>
-                  <small className={styles.limitRemaining}>
-                    {dailyRemaining.toFixed(2)} tokens remaining today
-                  </small>
-                </div>
-
-                <div className={styles.limitItem}>
-                  <div className={styles.limitHeader}>
-                    <span className={styles.limitLabel}>Weekly Limit</span>
-                    <span className={styles.limitValue}>
-                      {parseFloat(account.weeklySpent).toFixed(1)} /{" "}
-                      {parseFloat(account.weeklySpendLimit).toFixed(0)}
-                    </span>
-                  </div>
-                  <div className={styles.progressBar}>
-                    <div
-                      className={`${styles.progressFill} ${
-                        weeklyPercent > 80 ? styles.warning : ""
-                      }`}
-                      style={{ width: `${Math.min(weeklyPercent, 100)}%` }}
-                    />
-                  </div>
-                  <small className={styles.limitRemaining}>
-                    {weeklyRemaining.toFixed(2)} tokens remaining this week
-                  </small>
+                <div className={styles.alertMessage}>
+                  {formatTimeLeft(account.timeLeft)} remaining · Use your tokens
+                  before they expire
                 </div>
               </div>
-            </>
+            </div>
           )}
+
+          {/* Spending Limits Progress */}
+          <div className={styles.limitsCard}>
+            <h3 className={styles.limitsTitle}>📊 Spending Limits</h3>
+
+            <div className={styles.limitItem}>
+              <div className={styles.limitHeader}>
+                <span className={styles.limitLabel}>Daily Limit</span>
+                <span className={styles.limitValue}>
+                  {parseFloat(account.dailySpent).toFixed(1)} /{" "}
+                  {parseFloat(account.dailySpendLimit).toFixed(0)}
+                </span>
+              </div>
+              <div className={styles.progressBar}>
+                <div
+                  className={`${styles.progressFill} ${
+                    dailyPercent > 80 ? styles.warning : ""
+                  }`}
+                  style={{ width: `${Math.min(dailyPercent, 100)}%` }}
+                />
+              </div>
+              <small className={styles.limitRemaining}>
+                {dailyRemaining.toFixed(2)} tokens remaining today
+              </small>
+            </div>
+
+            <div className={styles.limitItem}>
+              <div className={styles.limitHeader}>
+                <span className={styles.limitLabel}>Weekly Limit</span>
+                <span className={styles.limitValue}>
+                  {parseFloat(account.weeklySpent).toFixed(1)} /{" "}
+                  {parseFloat(account.weeklySpendLimit).toFixed(0)}
+                </span>
+              </div>
+              <div className={styles.progressBar}>
+                <div
+                  className={`${styles.progressFill} ${
+                    weeklyPercent > 80 ? styles.warning : ""
+                  }`}
+                  style={{ width: `${Math.min(weeklyPercent, 100)}%` }}
+                />
+              </div>
+              <small className={styles.limitRemaining}>
+                {weeklyRemaining.toFixed(2)} tokens remaining this week
+              </small>
+            </div>
+          </div>
         </>
       )}
 
@@ -653,7 +615,7 @@ const BeneficiaryDashboard = ({ address, contract }) => {
       {showPINSetup && (
         <PINAuth
           mode="setup"
-          onPINSet={handlePINSetup}
+          onSubmit={handlePINSetup}
           onClose={() => setShowPINSetup(false)}
         />
       )}

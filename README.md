@@ -287,7 +287,6 @@ npm run dev
 
 ### 6️⃣ Access Application
 
-Visit **http://localhost:3000**
 
 **Test Accounts (Hardhat):**
 
@@ -300,11 +299,9 @@ Visit **http://localhost:3000**
 
 ### Quick Deploy (30 minutes)
 
-Read: [QUICK_DEPLOY.md](./QUICK_DEPLOY.md)
 
 ### Polygon Mainnet Deployment
 
-Read: [POLYGON_DEPLOYMENT.md](./POLYGON_DEPLOYMENT.md)
 
 **Configure Polygon:**
 
@@ -332,7 +329,6 @@ vercel --prod
 3. Add environment variables
 4. Deploy!
 
-**Complete Guide**: [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
 
 ---
 
@@ -697,21 +693,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 📞 Support & Contact
-
-- **Documentation**: Check our [guides](./DEPLOYMENT_GUIDE.md)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/reliefFund/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/reliefFund/discussions)
-
 ---
 
-## 🔗 Important Links
-
-- [Quick Deploy Guide](./QUICK_DEPLOY.md) - 30-minute deployment
-- [Deployment Guide](./DEPLOYMENT_GUIDE.md) - Complete deployment instructions
-- [Deployment Checklist](./DEPLOYMENT_CHECKLIST.md) - Step-by-step checklist
-- [Polygon Deployment](./POLYGON_DEPLOYMENT.md) - Polygon-specific guide
-- [Polygon Config](./POLYGON_CONFIG.md) - Configuration reference
 
 ---
 

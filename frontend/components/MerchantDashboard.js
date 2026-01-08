@@ -32,9 +32,16 @@ const MerchantDashboard = ({ address, contract }) => {
       // Fetch merchant profile from backend
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
       const profileRes = await axios.get(`${apiUrl}/api/merchant/${address}`);
-      setMerchantProfile(profileRes.data);
+
+      // Backend returns { success, data } structure
+      if (profileRes.data.success && profileRes.data.data) {
+        setMerchantProfile(profileRes.data.data);
+      } else {
+        setMerchantProfile(null);
+      }
     } catch (err) {
       console.error("Error fetching merchant data:", err);
+      setMerchantProfile(null);
     } finally {
       setLoading(false);
     }

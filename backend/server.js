@@ -30,7 +30,7 @@ let provider;
 let contract;
 let isConnected = false;
 
-// Contract ABI (Phase-1 & Phase-2: Relief Token System + PIN Auth)
+// Contract ABI (Relief Token System + PIN Auth)
 const CONTRACT_ABI = [
   "function owner() view returns (address)",
   "function paused() view returns (bool)",
@@ -326,6 +326,53 @@ app.get("/api/merchant/:address", async (req, res) => {
   }
 });
 
+// Get donor profile
+app.get("/api/donor/:address", async (req, res) => {
+  try {
+    if (!isConnected) {
+      return res.status(503).json({
+        success: false,
+        message: "Blockchain not connected",
+      });
+    }
+
+    const { address } = req.params;
+
+    if (!ethers.isAddress(address)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Ethereum address",
+      });
+    }
+
+    // Query DonationReceived events for this donor
+    const filter = contract.filters.DonationReceived(address);
+    const currentBlock = await provider.getBlockNumber();
+    const fromBlock = Math.max(0, currentBlock - 10000);
+    const events = await contract.queryFilter(filter, fromBlock, "latest");
+
+    // Calculate total donated
+    let totalDonated = 0n;
+    events.forEach((event) => {
+      totalDonated += event.args.amount;
+    });
+
+    res.json({
+      success: true,
+      data: {
+        totalDonated: ethers.formatEther(totalDonated),
+        donationCount: events.length,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching donor profile",
+      error: error.message,
+    });
+  }
+});
+
 // Get contract events (last N events)
 app.get("/api/events/:eventType", async (req, res) => {
   try {
@@ -459,8 +506,7 @@ async function startServer() {
     console.log(`   GET  /api/merchant/:address`);
     console.log(`   GET  /api/events/:eventType`);
     console.log("\n💡 Make sure Hardhat node is running on port 8545");
-    console.log("💡 Update CONTRACT_ADDRESS in .env after deployment");
-    console.log("\n🪙 Phase-1: Relief Token System Active\n");
+    console.log("💡 Update CONTRACT_ADDRESS in .env after deployment\n");
   });
 }
 

@@ -10,10 +10,17 @@ export default function LandingNavbar({ onConnectClick }) {
           <span className={styles.logoText}>ReliefFund</span>
         </Link>
 
-        <button className={styles.connectButton} onClick={onConnectClick}>
-          <span className={styles.buttonIcon}>🔗</span>
-          <span>Connect Wallet</span>
-        </button>
+        <div className={styles.navLinks}>
+          <Link href="/transparency" className={styles.navLink}>
+            <span className={styles.linkIcon}>📊</span>
+            <span>Transparency</span>
+          </Link>
+
+          <button className={styles.connectButton} onClick={onConnectClick}>
+            <span className={styles.buttonIcon}>🔗</span>
+            <span>Connect Wallet</span>
+          </button>
+        </div>
       </div>
     </nav>
   );

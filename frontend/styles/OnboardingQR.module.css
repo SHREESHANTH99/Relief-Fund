@@ -4,7 +4,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(102, 126, 234, 0.15);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -13,14 +14,20 @@
 }
 
 .modal {
-  background: white;
-  border-radius: 20px;
-  max-width: 600px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(255, 255, 255, 0.95) 100%
+  );
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+  max-width: 650px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease;
+  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.25);
+  border: 2px solid rgba(102, 126, 234, 0.1);
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeIn {
@@ -34,11 +41,11 @@
 
 @keyframes slideUp {
   from {
-    transform: translateY(50px);
+    transform: translateY(60px) scale(0.95);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
@@ -47,125 +54,168 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e9ecef;
+  padding: 2rem;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.05) 0%,
+    rgba(118, 75, 162, 0.05) 100%
+  );
 }
 
 .header h3 {
-  font-size: 1.3rem;
-  color: #2c3e50;
+  font-size: 1.75rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .closeButton {
-  background: transparent;
-  border: none;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.1) 0%,
+    rgba(118, 75, 162, 0.1) 100%
+  );
+  border: 2px solid rgba(102, 126, 234, 0.2);
   font-size: 1.5rem;
-  color: #7f8c8d;
+  color: #667eea;
   cursor: pointer;
   padding: 0.5rem;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 700;
 }
 
 .closeButton:hover {
-  background: #f8f9fa;
-  color: #2c3e50;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .body {
-  padding: 2rem;
+  padding: 2.5rem;
 }
 
 .infoBox {
-  background: linear-gradient(135deg, #e8f4f8 0%, #d4e9f7 100%);
-  padding: 1.5rem;
-  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.08) 0%,
+    rgba(118, 75, 162, 0.08) 100%
+  );
+  padding: 1.75rem;
+  border-radius: 16px;
   margin-bottom: 2rem;
   border-left: 4px solid #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.08);
 }
 
 .infoBox p {
-  color: #2c3e50;
+  color: #495057;
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.7;
+  font-size: 1rem;
 }
 
 .formGroup {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
 }
 
 .label {
   display: block;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.75rem;
 }
 
 .input,
 .select {
   width: 100%;
-  padding: 0.875rem;
-  border: 2px solid #e9ecef;
-  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  border: 2px solid rgba(102, 126, 234, 0.2);
+  border-radius: 12px;
   font-size: 1rem;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
+  background: white;
 }
 
 .input:focus,
 .select:focus {
   outline: none;
   border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+  transform: translateY(-2px);
 }
 
 .generateButton {
   width: 100%;
-  padding: 1rem;
+  padding: 1.25rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.125rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  letter-spacing: 0.02em;
 }
 
 .generateButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
 }
 
 .qrContainer {
   display: flex;
   justify-content: center;
-  padding: 2rem;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 16px;
+  padding: 2.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.05) 0%,
+    rgba(118, 75, 162, 0.05) 100%
+  );
+  border-radius: 20px;
   margin-bottom: 2rem;
+  padding: 2rem;
+  border: 2px solid rgba(102, 126, 234, 0.1);
 }
 
 .qrInfo {
-  background: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-radius: 16px;
   margin-bottom: 2rem;
+  border: 2px solid rgba(102, 126, 234, 0.1);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.08);
 }
 
 .infoRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #e9ecef;
+  padding: 1rem 0;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.08);
 }
 
 .infoRow:last-child {
@@ -173,80 +223,172 @@
 }
 
 .infoRow span:first-child {
-  font-weight: 600;
-  color: #7f8c8d;
+  font-weight: 700;
+  color: #6c757d;
+  font-size: 0.95rem;
 }
 
 .infoRow span:last-child {
-  color: #2c3e50;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-family: "Courier New", monospace;
+  font-weight: 700;
 }
 
 .badge {
-  padding: 0.25rem 0.75rem;
-  background: #667eea;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white !important;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 600 !important;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 700 !important;
   text-transform: capitalize;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: white !important;
 }
 
 .instructions {
-  background: #e8f4f8;
-  padding: 1.5rem;
-  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.08) 0%,
+    rgba(118, 75, 162, 0.08) 100%
+  );
+  padding: 2rem;
+  border-radius: 16px;
   margin-bottom: 2rem;
+  border: 2px solid rgba(102, 126, 234, 0.15);
 }
 
 .instructions h4 {
-  color: #2c3e50;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 1rem;
-  font-size: 1.1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
 .instructions ol {
   margin: 0;
-  padding-left: 1.5rem;
-  color: #34495e;
+  padding-left: 1.75rem;
+  color: #495057;
 }
 
 .instructions li {
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
+  margin-bottom: 0.75rem;
+  line-height: 1.7;
+  font-weight: 500;
 }
 
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .downloadButton,
 .newButton {
-  padding: 1rem;
+  padding: 1.25rem;
   border: none;
   border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .downloadButton {
   background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
   color: white;
+  box-shadow: 0 4px 16px rgba(39, 174, 96, 0.3);
 }
 
 .downloadButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(39, 174, 96, 0.4);
 }
 
 .newButton {
-  background: #f8f9fa;
-  color: #2c3e50;
-  border: 2px solid #e9ecef;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.1) 0%,
+    rgba(118, 75, 162, 0.1) 100%
+  );
+  color: #667eea;
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  font-weight: 700;
+}
+
+.newButton:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.2) 0%,
+    rgba(118, 75, 162, 0.2) 100%
+  );
+  transform: translateY(-3px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .header {
+    padding: 1.5rem;
+  }
+
+  .header h3 {
+    font-size: 1.5rem;
+  }
+
+  .body {
+    padding: 1.5rem;
+  }
+
+  .qrContainer {
+    padding: 2rem;
+  }
+
+  .actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 1.25rem;
+  }
+
+  .header h3 {
+    font-size: 1.25rem;
+  }
+
+  .body {
+    padding: 1.25rem;
+  }
+
+  .infoBox {
+    padding: 1.25rem;
+  }
+
+  .qrContainer {
+    padding: 1.5rem;
+  }
+
+  .qrInfo {
+    padding: 1.5rem;
+  }
+
+  .instructions {
+    padding: 1.5rem;
+  }
 }
 
 .newButton:hover {

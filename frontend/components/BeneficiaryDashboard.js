@@ -13,7 +13,7 @@ const BeneficiaryDashboard = ({ address, contract }) => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [activeTab, setActiveTab] = useState("home");
 
-  // Phase-2: PIN and Payment States
+  // PIN and Payment States
   const [hasPIN, setHasPIN] = useState(false);
   const [showPINSetup, setShowPINSetup] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
@@ -27,6 +27,8 @@ const BeneficiaryDashboard = ({ address, contract }) => {
     amount: "",
     description: "",
   });
+  const [showPINVerify, setShowPINVerify] = useState(false);
+  const [pendingPayment, setPendingPayment] = useState(null);
 
   useEffect(() => {
     if (address && contract) {
@@ -91,7 +93,14 @@ const BeneficiaryDashboard = ({ address, contract }) => {
       if (!contract || !address) return;
 
       const filter = contract.filters.TokensSpent(address);
-      const events = await contract.queryFilter(filter, -5000);
+
+      // Get current block number to determine safe range
+      const provider = contract.runner.provider;
+      const currentBlock = await provider.getBlockNumber();
+
+      // Use safe block range: start from block 0 or (currentBlock - 100)
+      const fromBlock = Math.max(0, currentBlock - 1000);
+      const events = await contract.queryFilter(filter, fromBlock, "latest");
 
       const txs = events.map((event) => ({
         merchant: event.args.merchant,
@@ -103,9 +112,16 @@ const BeneficiaryDashboard = ({ address, contract }) => {
       }));
 
       setTransactions(txs.reverse());
-      console.log("✅ Fetched", txs.length, "transactions");
+      console.log(
+        "✅ Fetched",
+        txs.length,
+        "transactions from block",
+        fromBlock
+      );
     } catch (err) {
       console.error("Error fetching transactions:", err);
+      // Set empty transactions on error to prevent UI issues
+      setTransactions([]);
     }
   };
 
@@ -139,6 +155,8 @@ const BeneficiaryDashboard = ({ address, contract }) => {
   const handleQRScan = (data) => {
     try {
       const merchantData = JSON.parse(data);
+      console.log("📱 Scanned QR data:", merchantData);
+
       if (merchantData.type === "merchant_payment") {
         setScannedMerchant(merchantData);
         setShowQRScanner(false);
@@ -150,6 +168,7 @@ const BeneficiaryDashboard = ({ address, contract }) => {
         );
       }
     } catch (err) {
+      console.error("QR parse error:", err);
       showMessage("error", "Failed to read QR code.");
     }
   };
@@ -181,6 +200,24 @@ const BeneficiaryDashboard = ({ address, contract }) => {
 
   const handleSpendTokens = async (e) => {
     e.preventDefault();
+
+    // Check if PIN is set up
+    if (!hasPIN) {
+      showMessage("error", "Please setup PIN first to make payments");
+      setShowPINSetup(true);
+      return;
+    }
+
+    // Store payment details and show PIN verification
+    setPendingPayment({
+      merchant: spendForm.merchant,
+      amount: spendForm.amount,
+      description: spendForm.description,
+    });
+    setShowPINVerify(true);
+  };
+
+  const executePendingPayment = async () => {
     setLoading(true);
 
     try {
@@ -188,12 +225,12 @@ const BeneficiaryDashboard = ({ address, contract }) => {
       const signer = await provider.getSigner();
       const contractWithSigner = contract.connect(signer);
 
-      const amount = ethers.parseEther(spendForm.amount);
+      const amount = ethers.parseEther(pendingPayment.amount);
 
       const tx = await contractWithSigner.spendTokens(
-        spendForm.merchant,
+        pendingPayment.merchant,
         amount,
-        spendForm.description
+        pendingPayment.description
       );
 
       showMessage("info", "Transaction submitted. Waiting for confirmation...");
@@ -201,9 +238,10 @@ const BeneficiaryDashboard = ({ address, contract }) => {
 
       showMessage(
         "success",
-        `✅ Spent ${spendForm.amount} tokens successfully!`
+        `✅ Spent ${pendingPayment.amount} tokens successfully!`
       );
       setSpendForm({ merchant: "", amount: "", description: "" });
+      setPendingPayment(null);
       fetchAccountInfo();
       fetchTransactions();
     } catch (err) {
@@ -211,6 +249,27 @@ const BeneficiaryDashboard = ({ address, contract }) => {
       showMessage("error", err.message || "Failed to spend tokens");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePINVerified = async (pin) => {
+    try {
+      // Verify PIN with backend
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const response = await axios.post(`${apiUrl}/api/auth/verify-pin`, {
+        address,
+        pin,
+      });
+
+      if (response.data.success) {
+        setShowPINVerify(false);
+        await executePendingPayment();
+      } else {
+        throw new Error("Invalid PIN");
+      }
+    } catch (err) {
+      console.error("PIN verification error:", err);
+      throw new Error("Invalid PIN. Please try again.");
     }
   };
 
@@ -649,7 +708,7 @@ const BeneficiaryDashboard = ({ address, contract }) => {
         </div>
       )}
 
-      {/* Phase-2 Modals */}
+      {/* Modals */}
       {showPINSetup && (
         <PINAuth
           mode="setup"
@@ -658,19 +717,31 @@ const BeneficiaryDashboard = ({ address, contract }) => {
         />
       )}
 
+      {showPINVerify && pendingPayment && (
+        <PINAuth
+          mode="verify"
+          title="Enter PIN to Confirm Payment"
+          onPINVerify={handlePINVerified}
+          onClose={() => {
+            setShowPINVerify(false);
+            setPendingPayment(null);
+          }}
+        />
+      )}
+
       {showQRScanner && (
         <QRScanner
-          onScan={handleQRScan}
+          onScanSuccess={handleQRScan}
           onClose={() => setShowQRScanner(false)}
         />
       )}
 
       {showPaymentModal && scannedMerchant && (
         <PaymentConfirmation
-          merchant={scannedMerchant}
+          merchantData={scannedMerchant}
+          beneficiaryAddress={address}
           contract={contract}
-          userAddress={address}
-          onComplete={handlePaymentComplete}
+          onSuccess={handlePaymentComplete}
           onClose={() => {
             setShowPaymentModal(false);
             setScannedMerchant(null);

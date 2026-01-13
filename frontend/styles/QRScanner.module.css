@@ -4,12 +4,13 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.95);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(4px);
 }
 
 @keyframes fadeIn {
@@ -22,144 +23,453 @@
 }
 
 .scannerModal {
-  background: white;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   border-radius: 20px;
-  max-width: 500px;
+  max-width: 340px;
   width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 @keyframes slideUp {
   from {
-    transform: translateY(50px);
+    transform: translateY(50px) scale(0.95);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
 
-.scannerHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.scannerHeader h3 {
-  font-size: 1.3rem;
-  color: #2c3e50;
-  margin: 0;
-}
-
 .closeButton {
-  background: transparent;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
-  font-size: 1.5rem;
-  color: #7f8c8d;
-  cursor: pointer;
-  padding: 0.5rem;
   width: 40px;
   height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+}
+
+.closeIcon {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 300;
 }
 
 .closeButton:hover {
-  background: #f8f9fa;
-  color: #2c3e50;
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
 }
 
 .scannerBody {
-  padding: 2rem;
+  padding: 1.25rem 1rem 1rem;
 }
 
-.instruction {
+.scannerHeader {
   text-align: center;
-  color: #7f8c8d;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 1.125rem;
+  color: #fff;
+  margin: 0 0 0.25rem 0;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  margin: 0;
+  font-weight: 400;
+}
+
+.scannerContainer {
+  position: relative;
+  margin: 0 auto;
+  max-width: 240px;
+}
+
+.scanFrame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  z-index: 2;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.scanFrame.success {
+  border-color: #10b981;
+}
+
+/* Corner Guides */
+.cornerTopLeft,
+.cornerTopRight,
+.cornerBottomLeft,
+.cornerBottomRight {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #667eea;
+  transition: border-color 0.3s ease;
+}
+
+.scanFrame.success .cornerTopLeft,
+.scanFrame.success .cornerTopRight,
+.scanFrame.success .cornerBottomLeft,
+.scanFrame.success .cornerBottomRight {
+  border-color: #10b981;
+}
+
+.cornerTopLeft {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 8px 0 0 0;
+}
+
+.cornerTopRight {
+  top: 0;
+  right: 0;
+  border-left: none;
+  border-bottom: none;
+  border-radius: 0 8px 0 0;
+}
+
+.cornerBottomLeft {
+  bottom: 0;
+  left: 0;
+  border-right: none;
+  border-top: none;
+  border-radius: 0 0 0 8px;
+}
+
+.cornerBottomRight {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
+  border-radius: 0 0 8px 0;
+}
+
+/* Animated Scanning Line */
+.scanLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #667eea, transparent);
+  box-shadow: 0 0 10px #667eea, 0 0 20px rgba(102, 126, 234, 0.5);
+  animation: scan 2s linear infinite;
+}
+
+@keyframes scan {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* Success Check Icon */
+.successIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 3rem;
+  font-weight: bold;
+  animation: successPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+}
+
+@keyframes successPop {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0);
+    opacity: 1;
+  }
 }
 
 .qrReader {
-  border-radius: 12px;
-  overflow: hidden;
+  border-radius: 16px;
+  overflow: visible;
   margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+  min-height: 200px;
 }
 
-/* Override html5-qrcode default styles */
+/* Show the video region */
 .qrReader :global(#qr-shaded-region) {
-  border: 2px solid #667eea !important;
-  border-radius: 12px;
+  border: none !important;
+  background: transparent !important;
+  display: block !important;
+  position: relative !important;
 }
 
-.error {
-  background: rgba(231, 76, 60, 0.1);
-  color: #e74c3c;
-  padding: 1rem;
-  border-radius: 8px;
+.qrReader :global(video) {
+  border-radius: 16px;
+  transform: scaleX(-1);
+  display: block !important;
+  width: 100% !important;
+  max-height: 240px !important;
+  height: auto !important;
+  object-fit: cover !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Allow canvas to work properly */
+.qrReader :global(canvas) {
+  display: block !important;
+  position: absolute !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Hide duplicate video elements - keep only the first one */
+.qrReader :global(video:nth-of-type(n + 2)) {
+  display: none !important;
+}
+
+/* Only hide the controls we don't want */
+.qrReader :global(#html5qr-code-full-region__dashboard_section),
+.qrReader :global(#html5qr-code-full-region__dashboard_section_csr),
+.qrReader :global(#html5qr-code-full-region__header_message) {
+  display: none !important;
+}
+
+.qrReader :global(select) {
+  display: none !important;
+}
+
+/* Show only the essential video container */
+.qrReader :global(#qr-shaded-region),
+.qrReader :global(video) {
+  display: block !important;
+}
+
+/* Error Message */
+.errorMessage {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.15) 0%,
+    rgba(220, 38, 38, 0.1) 100%
+  );
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  padding: 0.875rem;
+  border-radius: 12px;
   text-align: center;
   margin-top: 1rem;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  animation: shake 0.5s ease;
+}
+
+.errorIcon {
+  font-size: 1.25rem;
+  display: block;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-8px);
+  }
+  75% {
+    transform: translateX(8px);
+  }
 }
 
 .retryButton {
-  display: block;
-  margin: 1rem auto 0;
-  padding: 0.5rem 1.5rem;
-  background: #e74c3c;
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s;
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .retryButton:hover {
-  background: #c0392b;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
 }
 
-.scannerFooter {
-  padding: 1.5rem;
-  border-top: 1px solid #e9ecef;
+.retryButton:active {
+  transform: translateY(0);
+}
+
+/* Scanning Status */
+.scanningStatus {
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 0.625rem;
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
-.cancelButton {
-  padding: 0.75rem 2rem;
-  background: #95a5a6;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
+.pulseIndicator {
+  width: 8px;
+  height: 8px;
+  background: #667eea;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
 }
 
-.cancelButton:hover {
-  background: #7f8c8d;
-  transform: translateY(-1px);
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.6;
+  }
 }
 
 @media (max-width: 600px) {
   .scannerModal {
     width: 95%;
-    margin: 1rem;
+    max-width: none;
   }
 
   .scannerBody {
-    padding: 1rem;
+    padding: 1rem 0.875rem 0.875rem;
   }
+
+  .scanFrame {
+    width: 160px;
+    height: 160px;
+  }
+
+  .title {
+    font-size: 1rem;
+  }
+
+  .subtitle {
+    font-size: 0.7rem;
+  }
+
+  .scannerContainer {
+    max-width: 200px;
+  }
+}
+
+/* Upload Section */
+.uploadSection {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin-bottom: 0.875rem;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
+.divider span {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0 0.5rem;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.uploadButton {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+}
+
+.uploadButton:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.uploadButton:active {
+  transform: translateY(0);
 }

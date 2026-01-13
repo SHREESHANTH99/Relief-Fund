@@ -21,6 +21,17 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Prevent immediate redirect by checking localStorage first
+    const savedAddress = localStorage.getItem("walletAddress");
+    const savedRole = localStorage.getItem("userRole");
+
+    if (savedAddress && savedRole) {
+      console.log("⚡ Quick load from localStorage");
+      setWalletAddress(savedAddress);
+      setUserRole(savedRole);
+      setLoading(false);
+    }
+
     checkWalletConnection();
   }, []);
 
@@ -30,8 +41,24 @@ export default function Profile() {
       const savedAddress = localStorage.getItem("walletAddress");
       const savedRole = localStorage.getItem("userRole");
 
+      console.log("🔍 Profile: Checking wallet connection...");
+      console.log("📦 Saved address from localStorage:", savedAddress);
+      console.log("📦 Saved role from localStorage:", savedRole);
+
+      // If we have saved data, don't redirect - just use it
+      if (savedAddress && savedRole) {
+        setWalletAddress(savedAddress);
+        setUserRole(savedRole);
+      }
+
       if (typeof window.ethereum === "undefined") {
-        router.push("/");
+        console.warn("⚠️ MetaMask not installed");
+        // Only redirect if we don't have saved data
+        if (!savedAddress || !savedRole) {
+          router.push("/");
+        } else {
+          setLoading(false);
+        }
         return;
       }
 
@@ -39,8 +66,16 @@ export default function Profile() {
         method: "eth_accounts",
       });
 
+      console.log("🔐 Accounts from MetaMask:", accounts);
+
       if (accounts.length === 0) {
-        router.push("/");
+        console.warn("⚠️ No accounts connected");
+        // Only redirect if we don't have saved data
+        if (!savedAddress || !savedRole) {
+          router.push("/");
+        } else {
+          setLoading(false);
+        }
         return;
       }
 
@@ -49,13 +84,40 @@ export default function Profile() {
 
       // Use saved role if available for faster display
       if (savedRole && savedAddress === address) {
+        console.log("✅ Using saved role:", savedRole);
         setUserRole(savedRole);
       }
 
       await fetchUserData(address);
     } catch (err) {
-      console.error("Error checking wallet:", err);
-      router.push("/");
+      console.error("❌ Error checking wallet:", err);
+      // Don't redirect immediately - give user a chance to see the error
+      // Only redirect after a delay or if it's a critical error
+      if (err.message?.includes("rejected") || err.code === 4001) {
+        const savedAddress = localStorage.getItem("walletAddress");
+        const savedRole = localStorage.getItem("userRole");
+        if (savedAddress && savedRole) {
+          console.log("ℹ️ User rejected but using saved data");
+          setWalletAddress(savedAddress);
+          setUserRole(savedRole);
+          setLoading(false);
+        } else {
+          router.push("/");
+        }
+      } else {
+        // For other errors, try to use saved data
+        const savedAddress = localStorage.getItem("walletAddress");
+        const savedRole = localStorage.getItem("userRole");
+        if (savedAddress && savedRole) {
+          console.log("ℹ️ Using saved data due to error");
+          setWalletAddress(savedAddress);
+          setUserRole(savedRole);
+          setLoading(false);
+        } else {
+          console.error("No saved data available, redirecting...");
+          router.push("/");
+        }
+      }
     }
   };
 
@@ -63,17 +125,24 @@ export default function Profile() {
     try {
       setLoading(true);
 
+      console.log("📊 Fetching user data for:", address);
+
       // Get ETH balance
       const provider = new ethers.BrowserProvider(window.ethereum);
       const ethBalance = await provider.getBalance(address);
       setBalance(ethers.formatEther(ethBalance));
 
+      console.log("✅ ETH Balance:", ethers.formatEther(ethBalance));
+
       // Get contract data
       const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
       if (!contractAddress) {
+        console.warn("⚠️ Contract address not configured");
         setLoading(false);
         return;
       }
+
+      console.log("🔗 Contract address:", contractAddress);
 
       const contract = new ethers.Contract(
         contractAddress,
@@ -85,7 +154,15 @@ export default function Profile() {
       const userInfo = await contract.getUserInfo(address);
       const roleId = Number(userInfo[0]);
       const roleNames = ["None", "Admin", "Donor", "Beneficiary", "Merchant"];
-      setUserRole(roleNames[roleId]);
+      const roleName = roleNames[roleId];
+
+      console.log("👤 Role ID:", roleId, "Role Name:", roleName);
+
+      setUserRole(roleName);
+
+      // Save to localStorage for persistence
+      localStorage.setItem("walletAddress", address);
+      localStorage.setItem("userRole", roleName);
 
       // Get beneficiary token balance if applicable
       if (roleId === 3) {
@@ -96,8 +173,11 @@ export default function Profile() {
         const pinStatus = await contract.userHasPIN(address);
         setHasPIN(pinStatus);
       }
+
+      console.log("✅ Profile data loaded successfully");
     } catch (err) {
-      console.error("Error fetching user data:", err);
+      console.error("❌ Error fetching user data:", err);
+      // Don't throw - let the page display with whatever data we have
     } finally {
       setLoading(false);
     }
@@ -129,8 +209,14 @@ export default function Profile() {
     );
   }
 
+  // Don't return null - show a message instead
   if (!walletAddress) {
-    return null;
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingSpinner}></div>
+        <p>Connecting wallet...</p>
+      </div>
+    );
   }
 
   const roleColors = {

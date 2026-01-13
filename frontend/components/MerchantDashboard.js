@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { QRCodeSVG } from "qrcode.react";
 import axios from "axios";
 import MerchantOfflineQueue from "./MerchantOfflineQueue";
+import MerchantSettlement from "./MerchantSettlement";
 import styles from "@/styles/MerchantDashboard.module.css";
 
 const MerchantDashboard = ({ address, contract }) => {
@@ -51,9 +52,16 @@ const MerchantDashboard = ({ address, contract }) => {
     try {
       if (!contract || !address) return;
 
+      // Get current block number to determine safe range
+      const provider = contract.runner.provider;
+      const currentBlock = await provider.getBlockNumber();
+
+      // Use safe block range: start from block 0 or (currentBlock - 1000)
+      const fromBlock = Math.max(0, currentBlock - 1000);
+
       // Query TokensSpent events where merchant is the recipient
       const filter = contract.filters.TokensSpent(null, address);
-      const events = await contract.queryFilter(filter, -5000);
+      const events = await contract.queryFilter(filter, fromBlock, "latest");
 
       const txs = events.map((event) => ({
         beneficiary: event.args.beneficiary,
@@ -66,9 +74,16 @@ const MerchantDashboard = ({ address, contract }) => {
       }));
 
       setTransactions(txs.reverse());
-      console.log("✅ Fetched", txs.length, "merchant transactions");
+      console.log(
+        "✅ Fetched",
+        txs.length,
+        "merchant transactions from block",
+        fromBlock
+      );
     } catch (err) {
       console.error("Error fetching transactions:", err);
+      // Set empty transactions on error to prevent UI issues
+      setTransactions([]);
     }
   };
 
@@ -118,7 +133,7 @@ const MerchantDashboard = ({ address, contract }) => {
           <div className={styles.cardContent}>
             <div className={styles.cardLabel}>Total Received</div>
             <div className={styles.cardValue}>
-              {ethers.formatEther(merchantProfile.totalReceived || "0")} RELIEF
+              {merchantProfile.totalReceived || "0"} RELIEF
             </div>
           </div>
         </div>
@@ -159,6 +174,14 @@ const MerchantDashboard = ({ address, contract }) => {
           onClick={() => setActiveTab("history")}
         >
           📜 Transaction History
+        </button>
+        <button
+          className={`${styles.tab} ${
+            activeTab === "settlement" ? styles.active : ""
+          }`}
+          onClick={() => setActiveTab("settlement")}
+        >
+          💰 Settlements
         </button>
         <button
           className={`${styles.tab} ${
@@ -278,6 +301,11 @@ const MerchantDashboard = ({ address, contract }) => {
             )}
           </div>
         </div>
+      )}
+
+      {/* Settlement Tab */}
+      {activeTab === "settlement" && (
+        <MerchantSettlement address={address} contract={contract} />
       )}
 
       {/* Offline Queue Tab */}

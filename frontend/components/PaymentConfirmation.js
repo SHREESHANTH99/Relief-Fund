@@ -18,6 +18,19 @@ const PaymentConfirmation = ({
 
   const categoryNames = ["None", "Food", "Medicine", "Emergency"];
 
+  // Log merchant data for debugging
+  console.log("💳 Payment Confirmation - Merchant Data:", merchantData);
+
+  // Safe merchant name with fallback
+  const merchantName =
+    merchantData?.merchantName ||
+    merchantData?.businessName ||
+    "Unknown Merchant";
+  const merchantCategory =
+    merchantData?.category !== undefined
+      ? categoryNames[merchantData.category]
+      : "General";
+
   const handleAmountSubmit = async () => {
     if (!amount || parseFloat(amount) <= 0) {
       setError("Please enter a valid amount");
@@ -53,9 +66,20 @@ const PaymentConfirmation = ({
     setError("");
 
     try {
-      // In a real implementation, PIN would be verified on backend
-      // For demo, we'll proceed directly with transaction
+      // Verify PIN with backend first
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const pinResponse = await fetch(`${apiUrl}/api/auth/verify-pin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: beneficiaryAddress, pin }),
+      });
 
+      const pinData = await pinResponse.json();
+      if (!pinData.success) {
+        throw new Error("Invalid PIN");
+      }
+
+      // PIN verified, proceed with transaction
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contractWithSigner = contract.connect(signer);
@@ -73,13 +97,13 @@ const PaymentConfirmation = ({
 
       onSuccess({
         amount,
-        merchant: merchantData.merchantName,
+        merchant: merchantName,
         txHash: tx.hash,
       });
     } catch (err) {
       console.error("Payment error:", err);
       setError(err.message || "Payment failed");
-      setStep("amount");
+      setStep("pin");
     }
   };
 
@@ -99,14 +123,19 @@ const PaymentConfirmation = ({
               <div className={styles.merchantInfo}>
                 <div className={styles.merchantIcon}>🏪</div>
                 <div>
-                  <div className={styles.merchantName}>
-                    {merchantData.merchantName}
-                  </div>
+                  <div className={styles.merchantName}>{merchantName}</div>
                   <div className={styles.merchantCategory}>
-                    {categoryNames[merchantData.category]}
+                    {merchantCategory}
                   </div>
                 </div>
               </div>
+
+              {availableBalance !== null && (
+                <div className={styles.balanceInfo}>
+                  💰 Available Balance:{" "}
+                  <strong>{availableBalance.toFixed(2)} RELIEF</strong>
+                </div>
+              )}
 
               <div className={styles.formGroup}>
                 <label className={styles.label}>Amount (RELIEF Tokens)</label>
@@ -161,7 +190,11 @@ const PaymentConfirmation = ({
               <div className={styles.paymentSummary}>
                 <div className={styles.summaryRow}>
                   <span>Merchant:</span>
-                  <span>{merchantData.merchantName}</span>
+                  <span>{merchantName}</span>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span>Category:</span>
+                  <span>{merchantCategory}</span>
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Amount:</span>
@@ -181,6 +214,7 @@ const PaymentConfirmation = ({
                 mode="verify"
                 title="Enter PIN to Confirm"
                 onPINVerify={handlePINVerify}
+                onClose={() => setStep("amount")}
               />
 
               {error && <div className={styles.error}>{error}</div>}

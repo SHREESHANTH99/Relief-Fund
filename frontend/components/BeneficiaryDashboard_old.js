@@ -13,7 +13,7 @@ const BeneficiaryDashboard = ({ address, contract }) => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [activeTab, setActiveTab] = useState("home");
 
-  // Phase-2: PIN and Payment States
+  // PIN and Payment States
   const [hasPIN, setHasPIN] = useState(false);
   const [showPINSetup, setShowPINSetup] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
@@ -611,7 +611,7 @@ const BeneficiaryDashboard = ({ address, contract }) => {
         </div>
       )}
 
-      {/* Phase-2 Modals */}
+      {/* Modals */}
       {showPINSetup && (
         <PINAuth
           mode="setup"

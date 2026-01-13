@@ -35,13 +35,23 @@ module.exports = {
       gasPrice: "auto",
     },
     mumbai: {
-      url: process.env.MUMBAI_RPC_URL || "https://rpc-mumbai.maticvigil.com",
+      url: process.env.MUMBAI_RPC_URL || "https://rpc-amoy.polygon.technology",
       accounts:
         process.env.DEPLOYER_PRIVATE_KEY &&
         process.env.DEPLOYER_PRIVATE_KEY.length === 66
           ? [process.env.DEPLOYER_PRIVATE_KEY]
           : [],
-      chainId: 80001,
+      chainId: 80002,
+      gasPrice: "auto",
+    },
+    amoy: {
+      url: process.env.AMOY_RPC_URL || "https://rpc-amoy.polygon.technology",
+      accounts:
+        process.env.DEPLOYER_PRIVATE_KEY &&
+        process.env.DEPLOYER_PRIVATE_KEY.length === 66
+          ? [process.env.DEPLOYER_PRIVATE_KEY]
+          : [],
+      chainId: 80002,
       gasPrice: "auto",
     },
   },

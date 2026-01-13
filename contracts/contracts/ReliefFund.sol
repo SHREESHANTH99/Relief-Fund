@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 /**
  * @title ReliefFund
  * @dev Relief Currency System with Token Controls
- * @notice Phase-1: Stable Relief Token, User Caps, Expiry, Category Restrictions
+ * @notice Stable Relief Token with User Caps, Expiry, and Category Restrictions
  */
 contract ReliefFund {
     // ============= ENUMS =============

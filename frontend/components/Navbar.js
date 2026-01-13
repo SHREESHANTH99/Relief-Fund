@@ -6,6 +6,7 @@ import styles from "@/styles/Navbar.module.css";
 export default function Navbar({ walletAddress, userRole, onDisconnect }) {
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const roleColors = {
     Admin: "#e74c3c",
@@ -23,6 +24,14 @@ export default function Navbar({ walletAddress, userRole, onDisconnect }) {
           <span className={styles.logoIcon}>🌍</span>
           <span className={styles.logoText}>ReliefFund</span>
         </Link>
+
+        {/* Desktop Navigation */}
+        <div className={styles.navCenter}>
+          <Link href="/transparency" className={styles.navLink}>
+            <span>📊</span>
+            <span>Transparency</span>
+          </Link>
+        </div>
 
         <div className={styles.navRight}>
           <div
@@ -80,8 +89,79 @@ export default function Navbar({ walletAddress, userRole, onDisconnect }) {
               </div>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className={styles.mobileMenuButton}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span
+              className={
+                mobileMenuOpen ? styles.hamburgerOpen : styles.hamburger
+              }
+            ></span>
+            <span
+              className={
+                mobileMenuOpen ? styles.hamburgerOpen : styles.hamburger
+              }
+            ></span>
+            <span
+              className={
+                mobileMenuOpen ? styles.hamburgerOpen : styles.hamburger
+              }
+            ></span>
+          </button>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className={styles.mobileMenu}>
+          <div className={styles.mobileRoleDisplay}>
+            <span
+              className={styles.roleDot}
+              style={{ background: roleColor }}
+            ></span>
+            <span>{userRole}</span>
+          </div>
+          <Link
+            href="/transparency"
+            className={styles.mobileMenuItem}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <span>📊</span>
+            <span>Transparency</span>
+          </Link>
+          <Link
+            href="/profile"
+            className={styles.mobileMenuItem}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <span>👤</span>
+            <span>Profile</span>
+          </Link>
+          <Link
+            href="/"
+            className={styles.mobileMenuItem}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <span>🏠</span>
+            <span>Dashboard</span>
+          </Link>
+          <div className={styles.menuDivider}></div>
+          <button
+            className={styles.mobileMenuItem}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              onDisconnect();
+            }}
+          >
+            <span>🚪</span>
+            <span>Disconnect</span>
+          </button>
+        </div>
+      )}
     </nav>
   );
 }

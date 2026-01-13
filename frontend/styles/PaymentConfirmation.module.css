@@ -106,6 +106,22 @@
   opacity: 0.9;
 }
 
+.balanceInfo {
+  background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  color: white;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(86, 171, 47, 0.2);
+}
+
+.balanceInfo strong {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
 .formGroup {
   margin-bottom: 1.5rem;
 }

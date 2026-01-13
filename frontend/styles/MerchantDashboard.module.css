@@ -1,68 +1,162 @@
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 .dashboard {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e3e8f0 50%, #f5f7fa 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+  min-height: 100vh;
 }
 
 .header {
   text-align: center;
-  margin-bottom: 2rem;
-  padding: 2rem;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2.5rem;
+  padding: 2.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(255, 255, 255, 0.92) 100%
+  );
+  backdrop-filter: blur(15px);
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.12),
+    0 4px 12px rgba(118, 75, 162, 0.08);
+  border: 2px solid rgba(102, 126, 234, 0.15);
 }
 
 .header h2 {
-  font-size: 2rem;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .businessName {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   color: #667eea;
-  font-weight: 600;
-  margin: 0.5rem 0;
+  font-weight: 700;
+  margin: 0.75rem 0;
 }
 
 .categoryBadge {
   display: inline-block;
-  padding: 0.5rem 1.5rem;
+  padding: 0.75rem 2rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-top: 0.5rem;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 0.75rem;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 }
 
 .summaryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .summaryCard {
-  background: white;
-  padding: 1.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  backdrop-filter: blur(10px);
+  padding: 2rem;
   border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.08);
   display: flex;
   align-items: center;
-  gap: 1rem;
-  transition: transform 0.2s;
+  gap: 1.5rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid rgba(102, 126, 234, 0.1);
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.6s ease-out backwards;
+}
+
+.summaryCard:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.summaryCard:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.summaryCard:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.summaryCard:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.summaryCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transform: scaleX(0);
+  transition: transform 0.4s;
+}
+
+.summaryCard:hover::before {
+  transform: scaleX(1);
 }
 
 .summaryCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.15);
+  border-color: #667eea;
 }
 
 .cardIcon {
-  font-size: 2.5rem;
+  font-size: 3rem;
   flex-shrink: 0;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s;
+}
+
+.summaryCard:hover .cardIcon {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .cardContent {
@@ -70,17 +164,21 @@
 }
 
 .cardLabel {
-  font-size: 0.85rem;
-  color: #7f8c8d;
-  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 .cardValue {
-  font-size: 1.5rem;
-  color: #2c3e50;
-  font-weight: 700;
+  font-size: 1.75rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
 }
 
 .tabs {
@@ -325,7 +423,103 @@
   color: #7f8c8d;
 }
 
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .summaryGrid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 968px) {
+  .dashboard {
+    padding: 1.5rem;
+  }
+
+  .header {
+    padding: 2rem;
+  }
+
+  .header h2 {
+    font-size: 2rem;
+  }
+
+  .businessName {
+    font-size: 1.25rem;
+  }
+}
+
 @media (max-width: 768px) {
+  .dashboard {
+    padding: 1rem;
+  }
+
+  .header {
+    padding: 1.5rem;
+  }
+
+  .header h2 {
+    font-size: 1.75rem;
+  }
+
+  .businessName {
+    font-size: 1.125rem;
+  }
+
+  .categoryBadge {
+    padding: 0.625rem 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .summaryGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .summaryCard {
+    padding: 1.5rem;
+  }
+
+  .cardIcon {
+    width: 60px;
+    height: 60px;
+    font-size: 2.5rem;
+  }
+
+  .cardValue {
+    font-size: 1.5rem;
+  }
+
+  .tabs {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .tab {
+    padding: 0.875rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 1.25rem;
+  }
+
+  .header h2 {
+    font-size: 1.5rem;
+  }
+
+  .summaryCard {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .tab {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    min-width: 100%;
+  }
+
   .summaryGrid {
     grid-template-columns: 1fr;
   }

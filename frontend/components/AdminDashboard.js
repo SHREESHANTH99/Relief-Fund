@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import axios from "axios";
 import OnboardingQR from "./OnboardingQR";
 import AdminOfflineMonitoring from "./AdminOfflineMonitoring";
+import NGOFinance from "./NGOFinance";
 import styles from "@/styles/AdminDashboard.module.css";
 
 const RELIEF_TOKEN_ABI = [
@@ -339,6 +340,14 @@ const AdminDashboard = ({ address, contract }) => {
           onClick={() => setActiveTab("assignRole")}
         >
           👥 Assign Role
+        </button>
+        <button
+          className={`${styles.tab} ${
+            activeTab === "finance" ? styles.active : ""
+          }`}
+          onClick={() => setActiveTab("finance")}
+        >
+          🏦 NGO Finance
         </button>
         <button
           className={`${styles.tab} ${
@@ -688,31 +697,11 @@ const AdminDashboard = ({ address, contract }) => {
 
         {/* Offline Monitor Tab */}
         {activeTab === "offline" && <AdminOfflineMonitoring />}
-      </div>
 
-      {/* Info Box */}
-      <div className={styles.infoBox}>
-        <h4>ℹ️ Phase-1 Relief Token System</h4>
-        <ul>
-          <li>
-            <strong>Stable Token:</strong> 1 Token = 1 Relief Unit
-            (non-volatile)
-          </li>
-          <li>
-            <strong>Per-User Caps:</strong> Max allocation, daily & weekly
-            limits
-          </li>
-          <li>
-            <strong>Token Expiry:</strong> Unspent tokens automatically expire
-          </li>
-          <li>
-            <strong>Category Restrictions:</strong> Only Food, Medicine,
-            Emergency
-          </li>
-          <li>
-            <strong>No Trading:</strong> Tokens cannot be transferred or sold
-          </li>
-        </ul>
+        {/* NGO Finance Tab */}
+        {activeTab === "finance" && (
+          <NGOFinance address={address} contract={contract} />
+        )}
       </div>
 
       {/* Onboarding QR Modal */}
